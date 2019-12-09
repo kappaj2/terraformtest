@@ -1,0 +1,81 @@
+
+=======================================================================>>
+
+Create S3 bucket
+Run the export commands to setup secrets. Also set region if ~.aws
+$ terraform init
+$ terraform validate
+$ terraform plan -out=tfplan -var project_name=la-terraform
+$ terraform apply tfplan
+$ aws s3 ls
+$ terraform destroy -auto-approve -var project_name=la-terraform
+
+
+-- from the main module folder: (all var's defined so no need to generate plan)
+$ terraform init
+$ terraform validate
+$ terraform apply -auto-approve
+$ terraform destroy -auto-approve
+
+
+-- from networking
+$ terraform init
+$ terraform validate
+$ terraform apply -auto-approve
+$ terraform destroy -auto-approve
+$ rm terraform.tfvars
+
+
+-- from main
+$ terraform init
+$ terraform validate
+$ terraform apply -auto-approve
+$ terraform destroy -auto-approve
+
+
+
+
+Start with these three files for each module.
+$ touch {main.tf,variables.tf,outputs.tf}
+
+For EC2 we setup a SSH key as well.
+$ ssh-keygen (only if not setup yet)
+
+$ terraform init
+$ terraform validate
+$ terraform plan -out=tfplan -var 'key_name=tfkey' -var 'public_key_path=/home/andre/.ssh/id_rsa.pub'
+$ terraform apply -auto-approve / terraform apply tfplan
+$ terraform destroy -auto-approve
+
+# NOTE:This is when running on Andre's account. The SandBox has got perm problems doing terraform plan.
+$ ssh -i "tf_key.pem" ec2-user@ec2-13-56-224-79.us-west-1.compute.amazonaws.com
+
+
+==============================================================>
+Running for specific modules only
+
+$ terraform plan -target=module.storage -out=tfplan
+$ terraform apply tfplan
+
+
+===================================================================
+Terraform uses a "block" to configure the environment. This is outside of the AWS resources to be configured.
+Workaround to the fact that now variables allowed in the block:
+Provide config using the recommended -backend-config parameters
+
+$ terraform init \
+  -backend-config "bucket=mamamoney-test-terraform1" \
+  -backend-config "dynamodb_table=mamamoney-terraform-develop" \
+  -backend-config "region=eu-west-1" \
+  -backend-config "key=mamamoney/develop"
+
+Then setup the main.tf file as follows:
+data "terraform_remote_state" "state" {
+  backend = "s3"
+  config {
+    bucket     = "${var.tf_state_bucket}"
+    lock_table = "${var.tf_state_table}"
+    region     = "${var.region}"
+    key        = "${var.application}/${var.environment}"
+  }
+}

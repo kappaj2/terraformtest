@@ -1,0 +1,1 @@
+{"Modules":[{"Key":"compute","Source":"./compute","Dir":"compute"},{"Key":"networking","Source":"./networking","Dir":"networking"},{"Key":"storage","Source":"./storage","Dir":"storage"},{"Key":"","Source":"","Dir":"."},{"Key":"cognito","Source":"./cognito","Dir":"cognito"}]}
